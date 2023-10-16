@@ -1,10 +1,10 @@
 <?php
 
-function debuguear($variable) : string {
+function debuguear($variable) { //put string return
     echo "<pre>";
-    var_dump($variable);
+    print_r($variable);
     echo "</pre>";
-    exit;
+    // exit;
 }
 
 // Escapa / Sanitizar el HTML
