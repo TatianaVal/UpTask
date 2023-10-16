@@ -37,12 +37,34 @@ class Usuario extends ActiveRecord {
         }
         return self::$alertas;
     }
+    // Validar un Email
+    public function validarEmail() {
+        if(!$this->email) {
+            self::$alertas['error'][] = 'El Email es Obligatorio';
+        }
+        if(!filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            self::$alertas['error'][] = 'El Email no Valido';
+        }
+        return self::$alertas;
+    }
+    // Validar Password
+    public function validarPassword() {
+        if(!$this->password) {
+            self::$alertas['error'][] = 'El Password no puede ir Vacio';
+        }
+        if(strlen($this->password) < 6 ) {
+            self::$alertas['error'][] = 'El Password debe contener almenos
+        6 caracteres';
+        }
+        return self::$alertas;
+    }
+
     // Hashea el Password
     public function hashPassword() {
         $this->password = password_hash($this->password, PASSWORD_BCRYPT);
     }
     // Generar un Token
-    public function crearToken() {
+    public function crearToken() : void {
         $this->token = uniqid();
     }
 }
