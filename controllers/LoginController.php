@@ -8,18 +8,52 @@ use MVC\Router;
 
 class LoginController {
     public static function login(Router $router) {
-        if($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-        }
+        $alertas = [];
+        if($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $usuario = new Usuario($_POST);
+
+            $alertas = $usuario->validarLogin();
+
+            if(empty($alertas)) {
+                // Verificar que el usuario exista
+                $usuario = Usuario::where('email', $usuario->email);
+
+                if(!$usuario || !$usuario->confirmado) {
+                    Usuario::setAlerta('error', 'El Usuario no Existe o no esta Confirmado');
+                } else {
+                    // El Usuario existe
+                    if( password_verify($_POST['password'], $usuario-> password)) {
+
+                        // Iniciar la Sessión
+                        session_start();
+                        $_SESSION['id'] = $usuario->id;
+                        $_SESSION['nombre'] = $usuario->nombre;
+                        $_SESSION['email'] = $usuario->email;
+                        $_SESSION['login'] = true;
+
+                        // Redirecionar
+                        header('location: /dashboard');
+                    } else {
+                        Usuario::setAlerta('error', 'Password Incorrecto');
+                    }
+                }
+            }
+        }   
+        $alertas = Usuario::getAlertas();
         // Render a la vista
         $router->render('auth/login', [
-            'titulo' => 'Iniciar Sesión'
+            'titulo' => 'Iniciar Sesión',
+            'alertas' => $alertas
         ]);
     }
+    
     public static function logout() {
-        echo 'Desde logout';
-
+        session_start();
+        $_SESSION = [];
+        header('location: /');
     }
+
     public static function crear(Router $router) {
             $alertas = [];
             $usuario = new Usuario;
@@ -105,6 +139,7 @@ class LoginController {
             'alertas' => $alertas
         ]);
     }
+
     public static function restablecer(Router $router) {
 
         $token = s($_GET['token']);
@@ -140,7 +175,7 @@ class LoginController {
 
                 // Redireccionar
                 if($resultado){
-                    header('location: /mensaje');
+                    header('location: /');
                 }
 
             }
@@ -153,6 +188,7 @@ class LoginController {
             'mostrar' => $mostrar
         ]);
     }
+
     public static function mensaje(Router $router) {
         // Render a la vista
         $router->render('auth/mensaje', [
@@ -160,6 +196,7 @@ class LoginController {
         ]);
 
     }
+
     public static function confirmar(Router $router) {
 
         $token = s($_GET['token']);
